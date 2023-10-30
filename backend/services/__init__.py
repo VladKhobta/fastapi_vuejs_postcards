@@ -1,0 +1,1 @@
+from .postcards import PostcardService
