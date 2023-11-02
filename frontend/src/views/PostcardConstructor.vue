@@ -5,10 +5,12 @@
       <img
         v-if="imageUrl"
         :src="imageUrl"
+        ref="image"
         alt="Загруженное фото"
         @load="getImageSize"
       />
       <p>{{ imageSize }}</p>
+      <div v-if="error" class="error-message">{{ error }}</div>
     </div>
 
     <div class="col-2">
@@ -52,31 +54,36 @@
     <div class="col-2">
       <h5>Настройки послания</h5>
       <input
-        v-model="textInput"
+        v-model="textInput1"
+        @input="validateInput(1)"
         type="text"
         placeholder="Введите текст"
         required
       />
       <input
         v-model="textInput2"
+        @input="validateInput(2)"
         type="text"
         placeholder="Введите текст 2"
         required
       />
       <input
         v-model="textInput3"
+        @input="validateInput(3)"
         type="text"
         placeholder="Введите текст 3"
         required
       />
       <input
         v-model="textInput4"
+        @input="validateInput(4)"
         type="text"
         placeholder="Введите текст 4"
         required
       />
       <input
         v-model="textInput5"
+        @input="validateInput(5)"
         type="text"
         placeholder="Введите текст 5"
         required
@@ -106,7 +113,8 @@ export default {
     return {
       imageUrl: null,
       imageBlob: null,
-      textInput: "",
+      imageSize: null,
+      textInput1: "",
       textInput2: "",
       textInput3: "",
       textInput4: "",
@@ -118,6 +126,8 @@ export default {
       textColor: "black",
       titleFont: "Times New Roman",
       textFont: "Times New Roman",
+      maxLength: 40,
+      error: "",
     };
   },
   methods: {
@@ -132,11 +142,11 @@ export default {
       this.imageSize = `${width}x${height}`;
     },
     async previewImage() {
-      if (this.file && this.textInput) {
+      if (this.file && this.textInput1) {
         const formData = new FormData();
         formData.append("file", this.file);
         formData.append("text_list", [
-          this.textInput,
+          this.textInput1,
           this.textInput2,
           this.textInput3,
           this.textInput4,
@@ -180,6 +190,21 @@ export default {
           });
       }
     },
+    validateInput(inputNumber) {
+      const input = this[`textInput${inputNumber}`];
+      if (input.length > this.maxLength) {
+        this.error = `Строка номер ${inputNumber}: Слишком много символов`;
+        this[`textInput${inputNumber}`] = input.slice(0, this.maxLength);
+      } else {
+        this.error = "";
+      }
+    },
   },
 };
 </script>
+
+<style>
+.error-message {
+  color: red;
+}
+</style>

@@ -94,7 +94,8 @@ class PostcardService:
         draw.text(title_pos, body.title, font=title_font, fill=body.letter_color)
 
         if body.text_list:
-            text_array = body.text_list[0].split(",")
+            text_array = list(filter(lambda x: x, body.text_list[0].split(",")))
+            print(text_array)
             text_font = ImageFont.truetype(f"./fonts/{body.text_font}.ttf", 32)
             text_size = [0, 0]
             text_size[0] = max(text_font.getsize(text)[0] for text in text_array)

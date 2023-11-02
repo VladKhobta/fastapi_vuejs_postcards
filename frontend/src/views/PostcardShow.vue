@@ -1,40 +1,6 @@
-<!-- <template>
-  <div>
-    <button @click="downloadImages">Выбрать открытки</button>
-    <button @click="startSlideshow">Начать слайд-шоу</button>
-    <div v-if="!slideshowActive">
-      <div class="image-container">
-        <div
-          v-for="(image, index) in images"
-          :key="index"
-          class="image-wrapper"
-        >
-          <img :src="image.url" alt="Изображение" class="small-image" />
-          <button @click="toggleLike(index)" class="like-button">
-            {{ image.liked ? "Убрать лайк" : "Лайк" }}
-          </button>
-        </div>
-      </div>
-    </div>
-    <div v-else>
-      <div class="slideshow-container">
-        <img
-          v-for="(image, index) in likedImages"
-          :key="index"
-          class="slideshow-image"
-          :src="image.url"
-          :style="imageStyle(index)"
-        />
-      </div>
-    </div>
-  </div>
-</template> -->
-
 <template>
   <div>
-    <button @click="downloadImages">
-      Скачать и отобразить изображения
-    </button>
+    <button @click="downloadImages">Просмотреть все заготовки</button>
     <div v-if="!slideshowActive">
       <div class="image-container">
         <div
@@ -51,14 +17,17 @@
     </div>
     <div v-else>
       <div class="slideshow-container">
-        <img
-          v-for="(image, index) in likedImages"
-          :key="index"
-          class="slideshow-image"
-          :src="image.url"
-          :style="imageStyle(index)"
-        />
+      <div
+        v-for="(slide, index) in likedImages"
+        :key="index"
+      >
+        <transition name="slide-fade" mode="out-in">
+          <div class="slideshow-image" v-show="index === currentSlideIndex">
+            <img :src="slide.url" alt="Слайд" />
+          </div>
+        </transition>
       </div>
+    </div>
     </div>
     <button @click="toggleSlideshow">Начать слайд-шоу</button>
   </div>
@@ -80,17 +49,14 @@ export default {
   methods: {
     async downloadImages() {
       try {
-        // Скачайте архив с изображениями с сервера
         const response = await axios.get("/postcards/", {
           responseType: "blob",
         });
 
         if (response.status === 200) {
-          // Разархивируйте архив с использованием JSZip
           const zip = new JSZip();
           const zipData = await zip.loadAsync(response.data);
 
-          // Обработайте файлы из архива
           this.images = [];
           for (const fileName in zipData.files) {
             if (!zipData.files[fileName].dir) {
@@ -105,7 +71,6 @@ export default {
       }
     },
     toggleLike(index) {
-      // Переключение лайка для изображения с индексом index
       this.images[index].liked = !this.images[index].liked;
     },
     toggleSlideshow() {
@@ -118,19 +83,16 @@ export default {
       }
     },
     startSlideshow() {
-      // Настройте интервал для автокарусели (например, 3 секунды между слайдами)
       this.slideshowInterval = setInterval(() => {
         this.nextSlide();
       }, 3000);
     },
     stopSlideshow() {
-      // Остановите автокарусель
       if (this.slideshowInterval) {
         clearInterval(this.slideshowInterval);
       }
     },
     nextSlide() {
-      // Переключение на следующий слайд из понравившихся изображений
       const likedImages = this.images.filter((image) => image.liked);
       if (likedImages.length > 0) {
         this.currentSlideIndex =
@@ -144,12 +106,10 @@ export default {
   },
   computed: {
     likedImages() {
-      // Отфильтруйте изображения, чтобы включить только понравившиеся
       return this.images.filter((image) => image.liked);
     },
   },
   beforeDestroy() {
-    // Остановите автокарусель при уничтожении компонента
     this.stopSlideshow();
   },
 };
@@ -179,35 +139,24 @@ export default {
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-}
-
-.slideshow-container {
-  /* Стили для контейнера слайд-шоу */
-}
-
-.slideshow-image {
-  /* Стили для изображений в слайд-шоу */
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-.like-button {
-  /* Стили для кнопки "Лайк/Убрать лайк" в контейнере слайд-шоу */
   background-color: #3498db;
   color: #fff;
   padding: 5px 10px;
   border: none;
   cursor: pointer;
   display: block;
-  margin: 0 auto; /* Центрирование кнопки "Лайк" по горизонтали */
+  margin: 0 auto;
   margin-top: 5px;
 }
 
-@keyframes fade {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
+.like-button:hover {
+  background-color: #2684c7;
 }
+.slideshow-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  position: relative;
+}
+
 </style>
